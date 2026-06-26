@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ẢnhShare - Lưu trữ & chia sẻ ảnh</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <nav class="topbar" aria-label="Điều hướng chính">
+        <a class="brand" href="#top" aria-label="ẢnhShare">
+          <span class="brand-mark">Ả</span>
+          <span>ẢnhShare</span>
+        </a>
+        <div class="nav-actions">
+          <a href="#gallery">Kho ảnh</a>
+          <a href="#upload">Tải lên</a>
+          <button id="themeToggle" class="ghost-button" type="button">Đổi giao diện</button>
+        </div>
+      </nav>
+
+      <section id="top" class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Lưu trữ • Chia sẻ • Quản lý</p>
+          <h1>Lưu ảnh của bạn an toàn ngay trong trình duyệt.</h1>
+          <p class="hero-text">
+            Tải ảnh lên, thêm mô tả và thẻ, tìm kiếm nhanh, tải xuống lại hoặc tạo gói chia sẻ chỉ trong vài giây.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="#upload">Tải ảnh lên</a>
+            <a class="secondary-button" href="#gallery">Xem kho ảnh</a>
+          </div>
+        </div>
+        <aside class="stats-card" aria-label="Thống kê kho ảnh">
+          <div>
+            <span id="totalImages">0</span>
+            <p>ảnh đã lưu</p>
+          </div>
+          <div>
+            <span id="totalSize">0 MB</span>
+            <p>dung lượng</p>
+          </div>
+          <div>
+            <span id="totalTags">0</span>
+            <p>thẻ riêng biệt</p>
+          </div>
+        </aside>
+      </section>
+    </header>
+
+    <main>
+      <section id="upload" class="panel upload-panel" aria-labelledby="upload-title">
+        <div class="section-heading">
+          <p class="eyebrow">Bắt đầu</p>
+          <h2 id="upload-title">Tải ảnh lên kho cá nhân</h2>
+          <p>Ảnh được lưu bằng IndexedDB trên thiết bị này. Không cần máy chủ, không cần đăng nhập.</p>
+        </div>
+
+        <form id="uploadForm" class="upload-form">
+          <label id="dropZone" class="drop-zone" for="imageInput">
+            <input id="imageInput" type="file" accept="image/*" multiple />
+            <span class="upload-icon">☁️</span>
+            <strong>Kéo thả ảnh vào đây</strong>
+            <small>hoặc bấm để chọn nhiều ảnh từ máy của bạn</small>
+          </label>
+
+          <div class="form-grid">
+            <label>
+              Mô tả mặc định
+              <input id="captionInput" type="text" placeholder="Ví dụ: Chuyến đi Đà Lạt" maxlength="100" />
+            </label>
+            <label>
+              Thẻ
+              <input id="tagInput" type="text" placeholder="gia đình, du lịch, kỷ niệm" maxlength="120" />
+            </label>
+          </div>
+
+          <button class="primary-button" type="submit">Lưu ảnh</button>
+          <p id="uploadStatus" class="status" role="status"></p>
+        </form>
+      </section>
+
+      <section id="gallery" class="panel" aria-labelledby="gallery-title">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Kho ảnh</p>
+            <h2 id="gallery-title">Bộ sưu tập của bạn</h2>
+            <p>Tìm kiếm theo tên, mô tả hoặc thẻ. Chọn ảnh để tải xuống, chia sẻ hoặc xóa.</p>
+          </div>
+          <div class="toolbar">
+            <label class="search-box">
+              <span>Tìm kiếm</span>
+              <input id="searchInput" type="search" placeholder="Nhập từ khóa..." />
+            </label>
+            <button id="exportButton" class="secondary-button" type="button">Xuất gói chia sẻ</button>
+          </div>
+        </div>
+
+        <div id="galleryGrid" class="gallery-grid" aria-live="polite"></div>
+        <div id="emptyState" class="empty-state">
+          <span>🖼️</span>
+          <h3>Chưa có ảnh nào</h3>
+          <p>Hãy tải ảnh đầu tiên lên để bắt đầu xây dựng kho ảnh cá nhân.</p>
+          <a class="primary-button" href="#upload">Tải ảnh lên</a>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="shareDialog" class="share-dialog">
+      <form method="dialog">
+        <button class="close-button" aria-label="Đóng">×</button>
+      </form>
+      <div id="shareContent"></div>
+    </dialog>
+
+    <template id="imageCardTemplate">
+      <article class="image-card">
+        <img alt="" />
+        <div class="card-body">
+          <h3></h3>
+          <p class="caption"></p>
+          <div class="tag-list"></div>
+          <small class="meta"></small>
+          <div class="card-actions">
+            <button class="share-button" type="button">Chia sẻ</button>
+            <button class="download-button" type="button">Tải xuống</button>
+            <button class="delete-button" type="button">Xóa</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
