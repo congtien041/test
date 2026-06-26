@@ -11,6 +11,7 @@
 - Tải ảnh xuống lại bất cứ lúc nào.
 - Chia sẻ bằng Web Share API nếu trình duyệt hỗ trợ, hoặc sao chép dữ liệu ảnh.
 - Xuất toàn bộ kho ảnh thành tệp JSON để chia sẻ hoặc sao lưu.
+- Nhập lại gói JSON trên thiết bị hoặc trình duyệt khác để khôi phục kho ảnh, tránh mất dữ liệu khi đổi môi trường.
 - Giao diện sáng/tối và responsive cho điện thoại.
 
 ## Chạy thử
@@ -25,4 +26,4 @@ Sau đó truy cập `http://localhost:8000`.
 
 ## Lưu ý
 
-Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Nếu xóa dữ liệu trang web hoặc đổi trình duyệt, kho ảnh cục bộ có thể không còn.
+Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Trước khi xóa dữ liệu trang web hoặc đổi trình duyệt/thiết bị, hãy bấm **Xuất gói sao lưu** để tải tệp JSON, sau đó dùng **Nhập gói sao lưu** ở nơi mới để khôi phục kho ảnh.
