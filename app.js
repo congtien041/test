@@ -4,6 +4,7 @@ const DB_VERSION = 1;
 
 const state = {
   images: [],
+  pendingFiles: [],
   search: '',
 };
 
@@ -80,6 +81,22 @@ function fileToDataUrl(file) {
   });
 }
 
+function getImageFiles(fileList) {
+  return [...fileList].filter((file) => file.type.startsWith('image/'));
+}
+
+function setPendingFiles(fileList) {
+  state.pendingFiles = getImageFiles(fileList);
+  if (!state.pendingFiles.length) {
+    elements.status.textContent = 'Vui lòng chọn hoặc kéo thả tệp ảnh hợp lệ.';
+    return;
+  }
+
+  const names = state.pendingFiles.slice(0, 3).map((file) => file.name).join(', ');
+  const suffix = state.pendingFiles.length > 3 ? ` và ${state.pendingFiles.length - 3} ảnh khác` : '';
+  elements.status.textContent = `Đã chọn ${state.pendingFiles.length} ảnh: ${names}${suffix}. Bấm “Lưu ảnh” để tải lên.`;
+}
+
 function parseTags(value) {
   return value.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 8);
 }
@@ -142,7 +159,7 @@ async function refresh() {
 
 async function handleUpload(event) {
   event.preventDefault();
-  const files = [...elements.fileInput.files].filter((file) => file.type.startsWith('image/'));
+  const files = state.pendingFiles.length ? state.pendingFiles : getImageFiles(elements.fileInput.files);
   if (!files.length) {
     elements.status.textContent = 'Vui lòng chọn ít nhất một tệp ảnh.';
     return;
@@ -166,6 +183,7 @@ async function handleUpload(event) {
   }
 
   elements.form.reset();
+  state.pendingFiles = [];
   elements.status.textContent = `Đã lưu ${files.length} ảnh thành công.`;
   await refresh();
 }
@@ -242,7 +260,19 @@ function setupDragAndDrop() {
   });
 
   elements.dropZone.addEventListener('drop', (event) => {
-    elements.fileInput.files = event.dataTransfer.files;
+    const droppedFiles = event.dataTransfer?.files || [];
+    setPendingFiles(droppedFiles);
+
+    try {
+      elements.fileInput.files = droppedFiles;
+    } catch (error) {
+      // Some browsers block assigning files to an input. Keep the dropped files
+      // in memory so the upload button still works.
+    }
+  });
+
+  elements.fileInput.addEventListener('change', (event) => {
+    setPendingFiles(event.target.files);
   });
 }
 
