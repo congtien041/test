@@ -20,6 +20,7 @@ const elements = {
   template: document.querySelector('#imageCardTemplate'),
   search: document.querySelector('#searchInput'),
   exportButton: document.querySelector('#exportButton'),
+  importInput: document.querySelector('#importInput'),
   shareDialog: document.querySelector('#shareDialog'),
   shareContent: document.querySelector('#shareContent'),
   totalImages: document.querySelector('#totalImages'),
@@ -70,6 +71,12 @@ function saveImage(image) {
 
 function removeImage(id) {
   return withStore('readwrite', (store) => store.delete(id));
+}
+
+function saveImages(images) {
+  return withStore('readwrite', (store) => {
+    images.forEach((image) => store.put(image));
+  });
 }
 
 function fileToDataUrl(file) {
@@ -232,16 +239,68 @@ async function shareImage(image) {
 
 function exportSharePackage() {
   if (!state.images.length) {
-    elements.status.textContent = 'Chưa có ảnh để xuất gói chia sẻ.';
+    elements.status.textContent = 'Chưa có ảnh để xuất gói sao lưu.';
     return;
   }
   const payload = JSON.stringify({ exportedAt: new Date().toISOString(), images: state.images }, null, 2);
   const blob = new Blob([payload], { type: 'application/json' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download = `anhshare-${new Date().toISOString().slice(0, 10)}.json`;
+  link.download = `anhshare-backup-${new Date().toISOString().slice(0, 10)}.json`;
   link.click();
   URL.revokeObjectURL(link.href);
+}
+
+function normalizeImportedImage(image) {
+  if (!image || typeof image !== 'object' || typeof image.dataUrl !== 'string' || !image.dataUrl.startsWith('data:image/')) {
+    return null;
+  }
+
+  return {
+    id: typeof image.id === 'string' && image.id ? image.id : crypto.randomUUID(),
+    name: typeof image.name === 'string' && image.name ? image.name : 'anh-da-nhap',
+    caption: typeof image.caption === 'string' ? image.caption : '',
+    tags: Array.isArray(image.tags) ? image.tags.filter((tag) => typeof tag === 'string').slice(0, 8) : [],
+    type: typeof image.type === 'string' && image.type ? image.type : 'image/*',
+    size: Number.isFinite(image.size) ? image.size : 0,
+    dataUrl: image.dataUrl,
+    createdAt: Number.isFinite(image.createdAt) ? image.createdAt : Date.now(),
+  };
+}
+
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsText(file);
+  });
+}
+
+async function importSharePackage(event) {
+  const [file] = event.target.files || [];
+  if (!file) return;
+
+  try {
+    elements.status.textContent = 'Đang nhập gói sao lưu...';
+    const payload = JSON.parse(await readTextFile(file));
+    const importedImages = (Array.isArray(payload) ? payload : payload.images || [])
+      .map(normalizeImportedImage)
+      .filter(Boolean);
+
+    if (!importedImages.length) {
+      elements.status.textContent = 'Tệp sao lưu không có ảnh hợp lệ để nhập.';
+      return;
+    }
+
+    await saveImages(importedImages);
+    elements.status.textContent = `Đã nhập ${importedImages.length} ảnh. Kho ảnh có thể dùng tiếp trên thiết bị hoặc trình duyệt này.`;
+    await refresh();
+  } catch (error) {
+    elements.status.textContent = `Không thể nhập gói sao lưu: ${error.message}`;
+  } finally {
+    event.target.value = '';
+  }
 }
 
 function setupDragAndDrop() {
@@ -291,6 +350,7 @@ elements.search.addEventListener('input', (event) => {
   renderGallery();
 });
 elements.exportButton.addEventListener('click', exportSharePackage);
+elements.importInput.addEventListener('change', importSharePackage);
 setupDragAndDrop();
 setupTheme();
 refresh().catch((error) => {
