@@ -54,7 +54,7 @@
         <div class="section-heading">
           <p class="eyebrow">Bắt đầu</p>
           <h2 id="upload-title">Tải ảnh lên kho cá nhân</h2>
-          <p>Ảnh được lưu bằng IndexedDB trên thiết bị này. Không cần máy chủ, không cần đăng nhập.</p>
+          <p>Ảnh được lưu bằng IndexedDB trên thiết bị này. Hãy dùng xuất/nhập gói sao lưu để chuyển kho ảnh sang trình duyệt hoặc thiết bị khác.</p>
         </div>
 
         <form id="uploadForm" class="upload-form">
@@ -86,14 +86,16 @@
           <div>
             <p class="eyebrow">Kho ảnh</p>
             <h2 id="gallery-title">Bộ sưu tập của bạn</h2>
-            <p>Tìm kiếm theo tên, mô tả hoặc thẻ. Chọn ảnh để tải xuống, chia sẻ hoặc xóa.</p>
+            <p>Tìm kiếm theo tên, mô tả hoặc thẻ. Xuất gói sao lưu rồi nhập lại trên thiết bị hoặc trình duyệt mới để không mất kho ảnh.</p>
           </div>
           <div class="toolbar">
             <label class="search-box">
               <span>Tìm kiếm</span>
               <input id="searchInput" type="search" placeholder="Nhập từ khóa..." />
             </label>
-            <button id="exportButton" class="secondary-button" type="button">Xuất gói chia sẻ</button>
+            <button id="exportButton" class="secondary-button" type="button">Xuất gói sao lưu</button>
+            <label class="secondary-button import-button" for="importInput">Nhập gói sao lưu</label>
+            <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json" />
           </div>
         </div>
 
