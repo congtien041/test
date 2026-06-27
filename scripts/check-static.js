@@ -16,7 +16,7 @@ for (const asset of ['styles.css', 'app.js']) {
 }
 
 const app = fs.readFileSync('app.js', 'utf8');
-for (const token of ['indexedDB', 'navigator.share', 'fileToDataUrl', 'exportSharePackage']) {
+for (const token of ['indexedDB', 'navigator.share', 'fileToDataUrl', 'exportSharePackage', 'driveBackupButton', 'openGoogleDriveUpload']) {
   if (!app.includes(token)) {
     console.error(`app.js missing expected feature token: ${token}`);
     process.exit(1);

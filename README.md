@@ -10,7 +10,7 @@
 - Tìm kiếm theo tên ảnh, mô tả hoặc thẻ.
 - Tải ảnh xuống lại bất cứ lúc nào.
 - Chia sẻ bằng Web Share API nếu trình duyệt hỗ trợ, hoặc sao chép dữ liệu ảnh.
-- Xuất toàn bộ kho ảnh thành tệp `.json.gz` nén nhẹ hơn để sao lưu miễn phí lên Google Drive, OneDrive, Dropbox, iCloud hoặc USB.
+- Xuất toàn bộ kho ảnh thành tệp `.json.gz` nén nhẹ hơn, kèm nút mở Google Drive để tải file sao lưu lên tài khoản của bạn.
 - Vẫn có tùy chọn xuất JSON thường nếu cần file dễ đọc/chỉnh sửa thủ công.
 - Nhập lại gói `.json.gz` hoặc `.json` trên thiết bị hoặc trình duyệt khác để khôi phục kho ảnh, tránh mất dữ liệu khi đổi môi trường.
 - Khu hướng dẫn lưu miễn phí giải thích rõ giới hạn web tĩnh và quy trình sao lưu an toàn.
@@ -28,4 +28,4 @@ Sau đó truy cập `http://localhost:8000`.
 
 ## Lưu ý
 
-Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Web tĩnh không tự lưu lên cloud miễn phí nếu không có tài khoản/API riêng, nên cách đơn giản nhất là bấm **Xuất file nhẹ** để tải tệp `.json.gz`, rồi cất tệp đó lên Google Drive, OneDrive, Dropbox, iCloud, USB hoặc thẻ nhớ. Khi đổi trình duyệt/thiết bị, dùng **Nhập sao lưu** để khôi phục kho ảnh. Nếu trình duyệt quá cũ không hỗ trợ `.gz`, hãy dùng **Xuất JSON thường** hoặc giải nén file trước khi nhập.
+Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Web tĩnh không tự lưu lên cloud miễn phí nếu không có tài khoản/API riêng, nên cách đơn giản nhất là bấm **Sao lưu lên Google Drive** hoặc **Xuất file nhẹ** để tải tệp `.json.gz`, rồi cất tệp đó lên Google Drive, OneDrive, Dropbox, iCloud, USB hoặc thẻ nhớ. Khi đổi trình duyệt/thiết bị, dùng **Nhập sao lưu** để khôi phục kho ảnh. Nếu trình duyệt quá cũ không hỗ trợ `.gz`, hãy dùng **Xuất JSON thường** hoặc giải nén file trước khi nhập.
