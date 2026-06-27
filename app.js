@@ -20,6 +20,7 @@ const elements = {
   template: document.querySelector('#imageCardTemplate'),
   search: document.querySelector('#searchInput'),
   exportButton: document.querySelector('#exportButton'),
+  driveBackupButton: document.querySelector('#driveBackupButton'),
   exportJsonButton: document.querySelector('#exportJsonButton'),
   importInput: document.querySelector('#importInput'),
   shareDialog: document.querySelector('#shareDialog'),
@@ -256,7 +257,7 @@ async function gzipText(text) {
   return new Response(stream).blob();
 }
 
-async function exportSharePackage({ compressed = true } = {}) {
+async function exportSharePackage({ compressed = true, openDrive = false } = {}) {
   if (!state.images.length) {
     elements.status.textContent = 'Chưa có ảnh để xuất gói sao lưu.';
     return;
@@ -268,15 +269,25 @@ async function exportSharePackage({ compressed = true } = {}) {
     const gzippedBlob = await gzipText(payload);
     if (gzippedBlob) {
       downloadBlob(gzippedBlob, `anhshare-backup-${date}.json.gz`);
-      elements.status.textContent = 'Đã xuất file sao lưu nén. Bạn có thể tải file này lên Drive/Dropbox/OneDrive miễn phí.';
+      elements.status.textContent = openDrive
+        ? 'Đã tải file sao lưu nén. Google Drive sẽ mở ở tab mới, hãy tải file .json.gz vừa tải xuống lên Drive của bạn.'
+        : 'Đã xuất file sao lưu nén. Bạn có thể tải file này lên Drive/Dropbox/OneDrive miễn phí.';
+      if (openDrive) openGoogleDriveUpload();
       return;
     }
   }
 
   downloadBlob(new Blob([payload], { type: 'application/json' }), `anhshare-backup-${date}.json`);
-  elements.status.textContent = compressed
-    ? 'Trình duyệt chưa hỗ trợ nén tự động, đã xuất JSON thường để bạn vẫn sao lưu được.'
-    : 'Đã xuất JSON thường. File này dễ đọc nhưng thường nặng hơn file nén.';
+  elements.status.textContent = openDrive
+    ? 'Đã tải file JSON sao lưu. Google Drive sẽ mở ở tab mới, hãy tải file vừa tải xuống lên Drive của bạn.'
+    : compressed
+      ? 'Trình duyệt chưa hỗ trợ nén tự động, đã xuất JSON thường để bạn vẫn sao lưu được.'
+      : 'Đã xuất JSON thường. File này dễ đọc nhưng thường nặng hơn file nén.';
+  if (openDrive) openGoogleDriveUpload();
+}
+
+function openGoogleDriveUpload() {
+  window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener');
 }
 
 function normalizeImportedImage(image) {
@@ -388,6 +399,7 @@ elements.search.addEventListener('input', (event) => {
   renderGallery();
 });
 elements.exportButton.addEventListener('click', () => exportSharePackage({ compressed: true }));
+elements.driveBackupButton.addEventListener('click', () => exportSharePackage({ compressed: true, openDrive: true }));
 elements.exportJsonButton.addEventListener('click', () => exportSharePackage({ compressed: false }));
 elements.importInput.addEventListener('change', importSharePackage);
 setupDragAndDrop();
