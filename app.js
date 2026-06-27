@@ -3,7 +3,7 @@ const STORE_NAME = 'images';
 const DB_VERSION = 1;
 
 // --- Cấu hình Google Drive API ---
-const GOOGLE_CLIENT_ID = '340641295744-grg4d314p0tjh3g7diua4cn40gbd0bes.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '340641295744-6o2hnjho2foss1afqkhvk3bkbb4le881.apps.googleusercontent.com';
 const GOOGLE_FOLDER_ID = '1JWlCer_wPGe53vdh0lZRDlydqA6l8LSg';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
