@@ -20,6 +20,7 @@ const elements = {
   template: document.querySelector('#imageCardTemplate'),
   search: document.querySelector('#searchInput'),
   exportButton: document.querySelector('#exportButton'),
+  exportJsonButton: document.querySelector('#exportJsonButton'),
   importInput: document.querySelector('#importInput'),
   shareDialog: document.querySelector('#shareDialog'),
   shareContent: document.querySelector('#shareContent'),
@@ -237,18 +238,45 @@ async function shareImage(image) {
   elements.shareDialog.showModal();
 }
 
-function exportSharePackage() {
+function downloadBlob(blob, filename) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+function createBackupPayload(pretty = false) {
+  return JSON.stringify({ exportedAt: new Date().toISOString(), images: state.images }, null, pretty ? 2 : 0);
+}
+
+async function gzipText(text) {
+  if (!('CompressionStream' in window)) return null;
+  const stream = new Blob([text]).stream().pipeThrough(new CompressionStream('gzip'));
+  return new Response(stream).blob();
+}
+
+async function exportSharePackage({ compressed = true } = {}) {
   if (!state.images.length) {
     elements.status.textContent = 'Chưa có ảnh để xuất gói sao lưu.';
     return;
   }
-  const payload = JSON.stringify({ exportedAt: new Date().toISOString(), images: state.images }, null, 2);
-  const blob = new Blob([payload], { type: 'application/json' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `anhshare-backup-${new Date().toISOString().slice(0, 10)}.json`;
-  link.click();
-  URL.revokeObjectURL(link.href);
+
+  const date = new Date().toISOString().slice(0, 10);
+  const payload = createBackupPayload(!compressed);
+  if (compressed) {
+    const gzippedBlob = await gzipText(payload);
+    if (gzippedBlob) {
+      downloadBlob(gzippedBlob, `anhshare-backup-${date}.json.gz`);
+      elements.status.textContent = 'Đã xuất file sao lưu nén. Bạn có thể tải file này lên Drive/Dropbox/OneDrive miễn phí.';
+      return;
+    }
+  }
+
+  downloadBlob(new Blob([payload], { type: 'application/json' }), `anhshare-backup-${date}.json`);
+  elements.status.textContent = compressed
+    ? 'Trình duyệt chưa hỗ trợ nén tự động, đã xuất JSON thường để bạn vẫn sao lưu được.'
+    : 'Đã xuất JSON thường. File này dễ đọc nhưng thường nặng hơn file nén.';
 }
 
 function normalizeImportedImage(image) {
@@ -277,13 +305,23 @@ function readTextFile(file) {
   });
 }
 
+async function readBackupFile(file) {
+  const isGzip = file.name.endsWith('.gz') || file.type === 'application/gzip';
+  if (!isGzip) return readTextFile(file);
+  if (!('DecompressionStream' in window)) {
+    throw new Error('Trình duyệt này chưa hỗ trợ nhập file .gz. Hãy giải nén file trước rồi nhập .json.');
+  }
+  const stream = file.stream().pipeThrough(new DecompressionStream('gzip'));
+  return new Response(stream).text();
+}
+
 async function importSharePackage(event) {
   const [file] = event.target.files || [];
   if (!file) return;
 
   try {
     elements.status.textContent = 'Đang nhập gói sao lưu...';
-    const payload = JSON.parse(await readTextFile(file));
+    const payload = JSON.parse(await readBackupFile(file));
     const importedImages = (Array.isArray(payload) ? payload : payload.images || [])
       .map(normalizeImportedImage)
       .filter(Boolean);
@@ -349,7 +387,8 @@ elements.search.addEventListener('input', (event) => {
   state.search = event.target.value;
   renderGallery();
 });
-elements.exportButton.addEventListener('click', exportSharePackage);
+elements.exportButton.addEventListener('click', () => exportSharePackage({ compressed: true }));
+elements.exportJsonButton.addEventListener('click', () => exportSharePackage({ compressed: false }));
 elements.importInput.addEventListener('change', importSharePackage);
 setupDragAndDrop();
 setupTheme();
