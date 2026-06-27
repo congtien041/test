@@ -16,6 +16,7 @@
         <div class="nav-actions">
           <a href="#gallery">Kho ảnh</a>
           <a href="#upload">Tải lên</a>
+          <a href="#storage">Lưu miễn phí</a>
           <button id="themeToggle" class="ghost-button" type="button">Đổi giao diện</button>
         </div>
       </nav>
@@ -25,11 +26,12 @@
           <p class="eyebrow">Lưu trữ • Chia sẻ • Quản lý</p>
           <h1>Lưu ảnh của bạn an toàn ngay trong trình duyệt.</h1>
           <p class="hero-text">
-            Tải ảnh lên, thêm mô tả và thẻ, tìm kiếm nhanh, tải xuống lại hoặc tạo gói chia sẻ chỉ trong vài giây.
+            Tải ảnh lên, thêm mô tả và thẻ, tìm kiếm nhanh, tải xuống lại hoặc tạo bản sao lưu gọn nhẹ để cất ở Drive, Dropbox, OneDrive hoặc USB miễn phí.
           </p>
           <div class="hero-actions">
             <a class="primary-button" href="#upload">Tải ảnh lên</a>
             <a class="secondary-button" href="#gallery">Xem kho ảnh</a>
+            <a class="text-link" href="#storage">Xem cách lưu miễn phí</a>
           </div>
         </div>
         <aside class="stats-card" aria-label="Thống kê kho ảnh">
@@ -54,7 +56,7 @@
         <div class="section-heading">
           <p class="eyebrow">Bắt đầu</p>
           <h2 id="upload-title">Tải ảnh lên kho cá nhân</h2>
-          <p>Ảnh được lưu bằng IndexedDB trên thiết bị này. Hãy dùng xuất/nhập gói sao lưu để chuyển kho ảnh sang trình duyệt hoặc thiết bị khác.</p>
+          <p>Ảnh được lưu bằng IndexedDB trên thiết bị này. Khi cần sao lưu, hãy xuất file nén .json.gz nhẹ hơn rồi cất vào Google Drive, Dropbox, OneDrive hoặc USB.</p>
         </div>
 
         <form id="uploadForm" class="upload-form">
@@ -86,16 +88,17 @@
           <div>
             <p class="eyebrow">Kho ảnh</p>
             <h2 id="gallery-title">Bộ sưu tập của bạn</h2>
-            <p>Tìm kiếm theo tên, mô tả hoặc thẻ. Xuất gói sao lưu rồi nhập lại trên thiết bị hoặc trình duyệt mới để không mất kho ảnh.</p>
+            <p>Tìm kiếm theo tên, mô tả hoặc thẻ. Nên dùng “Xuất file nhẹ” để tạo bản sao lưu nén, miễn phí và dễ chuyển sang thiết bị khác.</p>
           </div>
           <div class="toolbar">
             <label class="search-box">
               <span>Tìm kiếm</span>
               <input id="searchInput" type="search" placeholder="Nhập từ khóa..." />
             </label>
-            <button id="exportButton" class="secondary-button" type="button">Xuất gói sao lưu</button>
-            <label class="secondary-button import-button" for="importInput">Nhập gói sao lưu</label>
-            <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json" />
+            <button id="exportButton" class="secondary-button" type="button">Xuất file nhẹ</button>
+            <button id="exportJsonButton" class="ghost-button" type="button">Xuất JSON thường</button>
+            <label class="secondary-button import-button" for="importInput">Nhập sao lưu</label>
+            <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json,.gz,application/gzip" />
           </div>
         </div>
 
@@ -105,6 +108,36 @@
           <h3>Chưa có ảnh nào</h3>
           <p>Hãy tải ảnh đầu tiên lên để bắt đầu xây dựng kho ảnh cá nhân.</p>
           <a class="primary-button" href="#upload">Tải ảnh lên</a>
+        </div>
+      </section>
+
+      <section id="storage" class="panel storage-panel" aria-labelledby="storage-title">
+        <div class="section-heading split-heading">
+          <div>
+            <p class="eyebrow">Miễn phí & nhẹ hơn</p>
+            <h2 id="storage-title">Lưu kho ảnh không cần máy chủ trả phí</h2>
+            <p>Web tĩnh không thể tự đẩy ảnh lên cloud nếu chưa có tài khoản/API riêng. Cách miễn phí, riêng tư và dễ nhất là lưu trong trình duyệt, rồi xuất file nén để cất ở dịch vụ bạn đã có.</p>
+          </div>
+          <div class="backup-tip">
+            <strong>Gợi ý:</strong> xuất file <code>.json.gz</code> mỗi tuần hoặc trước khi xóa dữ liệu trình duyệt.
+          </div>
+        </div>
+        <div class="storage-grid">
+          <article>
+            <span>1</span>
+            <h3>Lưu hằng ngày: IndexedDB</h3>
+            <p>Không đăng nhập, không server, dùng miễn phí ngay trên thiết bị hiện tại.</p>
+          </article>
+          <article>
+            <span>2</span>
+            <h3>Sao lưu nhẹ: JSON nén</h3>
+            <p>Nút “Xuất file nhẹ” tạo file nén nhỏ hơn JSON thường, vẫn nhập lại được trong app.</p>
+          </article>
+          <article>
+            <span>3</span>
+            <h3>Cất ở cloud miễn phí</h3>
+            <p>Tải file sao lưu lên Google Drive, OneDrive, Dropbox, iCloud hoặc lưu vào USB/thẻ nhớ.</p>
+          </article>
         </div>
       </section>
     </main>
