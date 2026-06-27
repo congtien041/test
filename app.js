@@ -2,6 +2,15 @@ const DB_NAME = 'anhshare-db';
 const STORE_NAME = 'images';
 const DB_VERSION = 1;
 
+// --- Cấu hình Google Drive API ---
+const GOOGLE_CLIENT_ID = '340641295744-grg4d314p0tjh3g7diua4cn40gbd0bes.apps.googleusercontent.com';
+const GOOGLE_FOLDER_ID = '1JWlCer_wPGe53vdh0lZRDlydqA6l8LSg';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+let tokenClient;
+let gapiInited = false;
+let gisInited = false;
+
 const state = {
   images: [],
   pendingFiles: [],
@@ -22,6 +31,7 @@ const elements = {
   exportButton: document.querySelector('#exportButton'),
   driveBackupButton: document.querySelector('#driveBackupButton'),
   exportJsonButton: document.querySelector('#exportJsonButton'),
+  driveImportButton: document.querySelector('#driveImportButton'),
   importInput: document.querySelector('#importInput'),
   shareDialog: document.querySelector('#shareDialog'),
   shareContent: document.querySelector('#shareContent'),
@@ -257,7 +267,133 @@ async function gzipText(text) {
   return new Response(stream).blob();
 }
 
-async function exportSharePackage({ compressed = true, openDrive = false } = {}) {
+async function initGoogle() {
+  if (typeof gapi !== 'undefined' && typeof google !== 'undefined') {
+    if (!gapiInited) {
+      await new Promise(resolve => gapi.load('client', resolve));
+      await gapi.client.init({
+        discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest']
+      });
+      gapiInited = true;
+    }
+    if (!gisInited) {
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: SCOPES,
+        callback: () => { }
+      });
+      gisInited = true;
+    }
+  }
+}
+
+function getGoogleAuthToken() {
+  return new Promise(async (resolve, reject) => {
+    try {
+      await initGoogle();
+      if (!gapiInited || !gisInited) {
+        return reject(new Error('Google API chưa tải xong.'));
+      }
+      if (gapi.client.getToken() !== null) {
+        return resolve();
+      }
+      tokenClient.callback = async (resp) => {
+        if (resp.error !== undefined) {
+          return reject(resp);
+        }
+        resolve();
+      };
+      tokenClient.requestAccessToken({ prompt: 'consent' });
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function uploadToGoogleDrive() {
+  if (!state.images.length) {
+    elements.status.textContent = 'Chưa có ảnh để sao lưu.';
+    return;
+  }
+  try {
+    elements.status.textContent = 'Đang xác thực với Google...';
+    await getGoogleAuthToken();
+
+    elements.status.textContent = 'Đang chuẩn bị file tải lên...';
+    const date = new Date().toISOString().slice(0, 10);
+    const payload = createBackupPayload(false);
+    const gzippedBlob = await gzipText(payload);
+    const blob = gzippedBlob || new Blob([payload], { type: 'application/json' });
+    const ext = gzippedBlob ? '.json.gz' : '.json';
+
+    const metadata = {
+      name: `anhshare-backup-${date}${ext}`,
+      parents: [GOOGLE_FOLDER_ID]
+    };
+
+    elements.status.textContent = 'Đang tải lên Google Drive...';
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+    form.append('file', blob);
+
+    const accessToken = gapi.client.getToken().access_token;
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + accessToken },
+      body: form
+    });
+
+    if (response.ok) {
+      elements.status.textContent = 'Đã sao lưu thành công lên Google Drive!';
+    } else {
+      const err = await response.json();
+      elements.status.textContent = `Lỗi tải lên: ${err.error.message}`;
+    }
+  } catch (err) {
+    console.error(err);
+    elements.status.textContent = `Lỗi sao lưu Drive: ${err.message || 'Chưa xác thực.'}`;
+  }
+}
+
+async function importFromGoogleDrive() {
+  try {
+    elements.status.textContent = 'Đang xác thực với Google...';
+    await getGoogleAuthToken();
+
+    elements.status.textContent = 'Đang tìm file sao lưu trên Drive...';
+    const response = await gapi.client.drive.files.list({
+      q: `'${GOOGLE_FOLDER_ID}' in parents and (mimeType='application/json' or mimeType='application/gzip' or name contains '.json') and trashed=false`,
+      orderBy: 'createdTime desc',
+      fields: 'files(id, name, mimeType)',
+      pageSize: 1
+    });
+
+    const files = response.result.files;
+    if (!files || files.length === 0) {
+      elements.status.textContent = 'Không tìm thấy bản sao lưu nào trong thư mục này.';
+      return;
+    }
+
+    const file = files[0];
+    elements.status.textContent = `Đang tải ${file.name} từ Drive...`;
+
+    const token = gapi.client.getToken().access_token;
+    const fetchResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!fetchResponse.ok) throw new Error('Lỗi khi tải file từ Drive.');
+
+    const blob = await fetchResponse.blob();
+    const backupFile = new File([blob], file.name, { type: file.mimeType || 'application/octet-stream' });
+    await processBackupFile(backupFile);
+  } catch (err) {
+    console.error(err);
+    elements.status.textContent = `Lỗi nhập Drive: ${err.message || 'Chưa xác thực.'}`;
+  }
+}
+
+async function exportSharePackage({ compressed = true } = {}) {
   if (!state.images.length) {
     elements.status.textContent = 'Chưa có ảnh để xuất gói sao lưu.';
     return;
@@ -269,25 +405,15 @@ async function exportSharePackage({ compressed = true, openDrive = false } = {})
     const gzippedBlob = await gzipText(payload);
     if (gzippedBlob) {
       downloadBlob(gzippedBlob, `anhshare-backup-${date}.json.gz`);
-      elements.status.textContent = openDrive
-        ? 'Đã tải file sao lưu nén. Google Drive sẽ mở ở tab mới, hãy tải file .json.gz vừa tải xuống lên Drive của bạn.'
-        : 'Đã xuất file sao lưu nén. Bạn có thể tải file này lên Drive/Dropbox/OneDrive miễn phí.';
-      if (openDrive) openGoogleDriveUpload();
+      elements.status.textContent = 'Đã xuất file sao lưu nén. Bạn có thể tự cất file này.';
       return;
     }
   }
 
   downloadBlob(new Blob([payload], { type: 'application/json' }), `anhshare-backup-${date}.json`);
-  elements.status.textContent = openDrive
-    ? 'Đã tải file JSON sao lưu. Google Drive sẽ mở ở tab mới, hãy tải file vừa tải xuống lên Drive của bạn.'
-    : compressed
-      ? 'Trình duyệt chưa hỗ trợ nén tự động, đã xuất JSON thường để bạn vẫn sao lưu được.'
-      : 'Đã xuất JSON thường. File này dễ đọc nhưng thường nặng hơn file nén.';
-  if (openDrive) openGoogleDriveUpload();
-}
-
-function openGoogleDriveUpload() {
-  window.open('https://drive.google.com/drive/my-drive', '_blank', 'noopener');
+  elements.status.textContent = compressed
+    ? 'Trình duyệt chưa hỗ trợ nén tự động, đã xuất JSON thường để bạn vẫn sao lưu được.'
+    : 'Đã xuất JSON thường. File này dễ đọc nhưng thường nặng hơn file nén.';
 }
 
 function normalizeImportedImage(image) {
@@ -326,10 +452,7 @@ async function readBackupFile(file) {
   return new Response(stream).text();
 }
 
-async function importSharePackage(event) {
-  const [file] = event.target.files || [];
-  if (!file) return;
-
+async function processBackupFile(file) {
   try {
     elements.status.textContent = 'Đang nhập gói sao lưu...';
     const payload = JSON.parse(await readBackupFile(file));
@@ -347,9 +470,14 @@ async function importSharePackage(event) {
     await refresh();
   } catch (error) {
     elements.status.textContent = `Không thể nhập gói sao lưu: ${error.message}`;
-  } finally {
-    event.target.value = '';
   }
+}
+
+async function importSharePackage(event) {
+  const [file] = event.target.files || [];
+  if (!file) return;
+  await processBackupFile(file);
+  event.target.value = '';
 }
 
 function setupDragAndDrop() {
@@ -399,8 +527,9 @@ elements.search.addEventListener('input', (event) => {
   renderGallery();
 });
 elements.exportButton.addEventListener('click', () => exportSharePackage({ compressed: true }));
-elements.driveBackupButton.addEventListener('click', () => exportSharePackage({ compressed: true, openDrive: true }));
+elements.driveBackupButton.addEventListener('click', uploadToGoogleDrive);
 elements.exportJsonButton.addEventListener('click', () => exportSharePackage({ compressed: false }));
+if (elements.driveImportButton) elements.driveImportButton.addEventListener('click', importFromGoogleDrive);
 elements.importInput.addEventListener('change', importSharePackage);
 setupDragAndDrop();
 setupTheme();

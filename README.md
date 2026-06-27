@@ -10,10 +10,9 @@
 - Tìm kiếm theo tên ảnh, mô tả hoặc thẻ.
 - Tải ảnh xuống lại bất cứ lúc nào.
 - Chia sẻ bằng Web Share API nếu trình duyệt hỗ trợ, hoặc sao chép dữ liệu ảnh.
-- Xuất toàn bộ kho ảnh thành tệp `.json.gz` nén nhẹ hơn, kèm nút mở Google Drive để tải file sao lưu lên tài khoản của bạn.
-- Vẫn có tùy chọn xuất JSON thường nếu cần file dễ đọc/chỉnh sửa thủ công.
-- Nhập lại gói `.json.gz` hoặc `.json` trên thiết bị hoặc trình duyệt khác để khôi phục kho ảnh, tránh mất dữ liệu khi đổi môi trường.
-- Khu hướng dẫn lưu miễn phí giải thích rõ giới hạn web tĩnh và quy trình sao lưu an toàn.
+- Tích hợp Google Drive API: Tự động tải lên và khôi phục kho ảnh nén `.json.gz` thẳng từ thư mục Google Drive của bạn, không cần tải xuống thủ công.
+- Vẫn có tùy chọn xuất JSON thường hoặc nhập từ máy tính nếu cần.
+- Khu hướng dẫn lưu miễn phí giải thích quy trình sao lưu qua Google Drive tự động.
 - Giao diện sáng/tối, responsive cho điện thoại và bố cục hoàn thiện hơn.
 
 ## Chạy thử
@@ -26,6 +25,15 @@ python3 -m http.server 8000
 
 Sau đó truy cập `http://localhost:8000`.
 
-## Lưu ý
+## Lưu ý & Cài đặt Google Drive API
 
-Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Web tĩnh không tự lưu lên cloud miễn phí nếu không có tài khoản/API riêng, nên cách đơn giản nhất là bấm **Sao lưu lên Google Drive** hoặc **Xuất file nhẹ** để tải tệp `.json.gz`, rồi cất tệp đó lên Google Drive, OneDrive, Dropbox, iCloud, USB hoặc thẻ nhớ. Khi đổi trình duyệt/thiết bị, dùng **Nhập sao lưu** để khôi phục kho ảnh. Nếu trình duyệt quá cũ không hỗ trợ `.gz`, hãy dùng **Xuất JSON thường** hoặc giải nén file trước khi nhập.
+Ảnh được lưu trong IndexedDB của trình duyệt trên thiết bị hiện tại. Để tính năng **Sao lưu lên Google Drive** và **Nhập sao lưu từ Drive** hoạt động, bạn cần cung cấp một **Google Client ID**:
+
+1. Đăng nhập [Google Cloud Console](https://console.cloud.google.com/).
+2. Tạo một Dự án mới và bật API **Google Drive API**.
+3. Cấu hình **OAuth consent screen**, thêm tài khoản email của những người dùng thử nghiệm.
+4. Tạo thông tin xác thực: **OAuth client ID** (Web application). Trong phần "Authorized JavaScript origins", điền đường dẫn trang web (ví dụ `http://localhost:8000`).
+5. Copy **Client ID** vừa tạo.
+6. Mở file `app.js` và thay đoạn `'ĐIỀN_CLIENT_ID_CỦA_BẠN_VÀO_ĐÂY'` bằng Client ID của bạn.
+
+> **Thư mục lưu trữ:** ID thư mục hiện đang được cài cứng (`1JWlCer_wPGe53vdh0lZRDlydqA6l8LSg`). Người sử dụng ứng dụng này phải được cấp quyền **Người chỉnh sửa (Editor)** cho thư mục đó trên Google Drive thì mới có thể sao lưu và khôi phục ảnh.

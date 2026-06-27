@@ -98,7 +98,8 @@
             <button id="exportButton" class="secondary-button" type="button">Xuất file nhẹ</button>
             <button id="driveBackupButton" class="primary-button" type="button">Sao lưu lên Google Drive</button>
             <button id="exportJsonButton" class="ghost-button" type="button">Xuất JSON thường</button>
-            <label class="secondary-button import-button" for="importInput">Nhập sao lưu</label>
+            <button id="driveImportButton" class="secondary-button import-button" type="button">Nhập sao lưu từ Drive</button>
+            <label class="ghost-button import-button" for="importInput">Nhập từ máy</label>
             <input id="importInput" class="visually-hidden" type="file" accept="application/json,.json,.gz,application/gzip" />
           </div>
         </div>
@@ -116,11 +117,11 @@
         <div class="section-heading split-heading">
           <div>
             <p class="eyebrow">Miễn phí & nhẹ hơn</p>
-            <h2 id="storage-title">Lưu kho ảnh không cần máy chủ trả phí</h2>
-            <p>Web tĩnh không thể tự đẩy ảnh lên cloud nếu chưa có tài khoản/API riêng. Cách miễn phí, riêng tư và dễ nhất là lưu trong trình duyệt, rồi xuất file nén và mở nhanh Google Drive để bạn tải file lên tài khoản của mình.</p>
+            <h2 id="storage-title">Lưu kho ảnh tự động lên Google Drive</h2>
+            <p>Ứng dụng được kết nối trực tiếp với Google Drive API. Các bản sao lưu của bạn sẽ được tải thẳng lên thư mục Drive an toàn và riêng tư.</p>
           </div>
           <div class="backup-tip">
-            <strong>Gợi ý:</strong> bấm <b>Sao lưu lên Google Drive</b> để tải file <code>.json.gz</code>, sau đó app sẽ mở Drive để bạn kéo file vừa tải lên.
+            <strong>Gợi ý:</strong> bấm <b>Sao lưu lên Google Drive</b> để đồng bộ kho ảnh lên Cloud. Bấm <b>Nhập sao lưu từ Drive</b> để khôi phục.
           </div>
         </div>
         <div class="storage-grid">
@@ -136,8 +137,8 @@
           </article>
           <article>
             <span>3</span>
-            <h3>Cất ở Google Drive miễn phí</h3>
-            <p>Bấm “Sao lưu lên Google Drive”, đăng nhập Drive rồi tải file sao lưu vừa tải xuống. Không cần máy chủ trả phí.</p>
+            <h3>Đồng bộ Google Drive tự động</h3>
+            <p>Chỉ cần đăng nhập Google một lần, bấm “Sao lưu lên Google Drive” và ảnh sẽ được tự động đẩy lên hoặc tải về mà không cần thao tác thủ công.</p>
           </article>
         </div>
       </section>
@@ -167,6 +168,8 @@
       </article>
     </template>
 
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script src="https://accounts.google.com/gsi/client"></script>
     <script src="app.js"></script>
   </body>
 </html>
